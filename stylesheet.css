@@ -1,9 +1,14 @@
 
 
-
+div {
+  background-color: #e68a00;
+}
 
 #name {
-  position: auto;
+  display: block;
+  width: 180px;
+  height: 30px;
+  
   
 }
 
@@ -12,9 +17,6 @@ p {
   font-family: "Century Gothic";
   color: #ffffff;
   font-size: 35px;
-  background-color: #e68a00;
-  padding: 5px;
-  width: 180px;
 }
 
 #footer {
