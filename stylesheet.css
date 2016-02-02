@@ -13,7 +13,8 @@ iframe {
 }
 
 div {
-  background-color: #002b80;
+  border-width: 1px;
+  border-color: #000000;
 }
 
 #name {
