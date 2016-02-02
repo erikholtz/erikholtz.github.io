@@ -3,6 +3,9 @@
 
 
 div {
+  width: 60px;
+  height: 30px;
+  color: ##e68a00;
   position: block;
   margin: 700px 50px 40px 50px;
 }
