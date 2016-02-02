@@ -5,11 +5,18 @@
 #name {
   background-color: #e68a00;
   text-align: center;
-  color: ##ffffff;
-  font-family: "Century Gothic";
-  font-size: 30px;
   padding: 10px;
   margin-left: 500px;
   margin-right: 500px;
+  
+}
+
+p {
+  font-family: "Century Gothic";
+  color: #ffffff;
+  font-size: 30px;
+}
+
+#footer {
   
 }
