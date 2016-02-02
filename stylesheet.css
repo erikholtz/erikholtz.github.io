@@ -6,7 +6,9 @@ div {
 
 #name {
   display: block;
-  margin: auto;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 20px;
   width: 180px;
   height: 45px;
   
