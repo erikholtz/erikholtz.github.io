@@ -1,5 +1,9 @@
 
 
+* {
+  background-color: #00004d;
+}
+
 div {
   background-color: #e68a00;
 }
@@ -22,7 +26,9 @@ p {
   font-size: 35px;
 }
 
+/*
 #footer {
   background-color: #0059b3;
   height: 70px;
 }
+*/
