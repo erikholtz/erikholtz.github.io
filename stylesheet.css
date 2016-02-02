@@ -6,8 +6,7 @@ body {
 
 iframe {
   width: 75%;
-  margin-right: auto;
-  margin-left: auto;
+  margin: auto;
   margin-top: 20px;
 }
 
