@@ -5,10 +5,10 @@ body {
 }
 
 iframe {
-  width: 75%;
+  width: 80%;
   height: 600px;
-  margin-left: auto;
-  margin-right: auto;
+  border-width: 0px;
+  margin-left: 10%;
   margin-top: 20px;
 }
 
