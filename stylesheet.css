@@ -6,8 +6,9 @@ div {
 
 #name {
   display: block;
+  margin-left: 50%;
   width: 180px;
-  height: 30px;
+  height: 60px;
   
   
 }
