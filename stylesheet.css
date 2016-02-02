@@ -4,6 +4,12 @@ body {
   background-color: #000033;
 }
 
+iframe {
+  margin-right: auto;
+  margin-left: auto;
+  margin-top: 20px;
+}
+
 div {
   background-color: #e68a00;
 }
