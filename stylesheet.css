@@ -3,18 +3,17 @@
 
 
 #name {
-  background-color: #e68a00;
-  text-align: center;
-  padding: 3px;
-  width: 70px;
   
   
 }
 
 p {
+  text-align: center;
   font-family: "Century Gothic";
   color: #ffffff;
   font-size: 35px;
+  background-color: #e68a00;
+  padding: 5px;
 }
 
 #footer {
