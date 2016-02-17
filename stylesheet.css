@@ -41,7 +41,9 @@ p {
 }
 
 #header {
+  position: fixed;
   background-color:#006666;
+  top: 0;
   height: 70px;
 }
 
