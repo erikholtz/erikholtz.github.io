@@ -23,12 +23,12 @@
    <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
    
    <script>
-   var map = L.map('leafmap').setView([35.322, -120.5], 10);
+   var map = L.map('leafmap').setView([35.322, -120.5], 13);
    
          L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
         maxZoom: 18,
-        id: 'mapbox.satellite',
+        id: 'mapbox://styles/eholtz/cikra2ohm004293lzcn1gj4zo',
         accessToken: 'pk.eyJ1IjoiZWhvbHR6IiwiYSI6Ik40Y3QyTUkifQ.w7y1ibG-oeP22MJcHPi54w'
         }).addTo(map);
   </script>      
