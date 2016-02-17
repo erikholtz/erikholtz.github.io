@@ -50,6 +50,6 @@ p {
   background-color: #006666;
   bottom: 0px;
   height: 70px;
-  position: absolute;
+  position: fixed;
 }
 
