@@ -40,6 +40,11 @@ p {
   font-family:"Century Gothic";
 }
 
+#header {
+  background-color:#006666;
+  height: 70px;
+}
+
 
 #footer {
   background-color: #006666;
