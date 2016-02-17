@@ -48,7 +48,8 @@ p {
 
 #footer {
   background-color: #006666;
-  bottom: 70px;
+  bottom: 0px;
+  height: 70px;
   position: absolute;
 }
 
