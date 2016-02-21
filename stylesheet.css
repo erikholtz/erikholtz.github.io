@@ -37,6 +37,10 @@ h1 {
   
 }
 
+a {
+  color: #e68900;
+}
+
 p {
   position: relative;
   margin-top: 50px;
