@@ -1,19 +1,29 @@
+
 <!DOCTYPE html>
 <html>
 <head>
-
+    <meta charset='utf-8' />
+    <title></title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.14.3/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.14.3/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
 </head>
-
-
 <body>
 
+<div id='map'></div>
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoiZWhvbHR6IiwiYSI6Ik40Y3QyTUkifQ.w7y1ibG-oeP22MJcHPi54w';
+var map = new mapboxgl.Map({
+    container: 'map', // container id
+    style: 'mapbox://styles/eholtz/cil76n4xw00bz9fm106k1d4fj', //stylesheet location
+    center: [-120.660766, 35.273511], // starting position
+    zoom: 11 // starting zoom
+});
+</script>
 
-</body>	
-
-
-
-
-
-
-
+</body>
 </html>
