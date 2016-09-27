@@ -27,10 +27,12 @@ html, body, #mapid {
     <script>
     var map = L.map('mapid');
 
-    L.tileLayer('https://api.tiles.mapbox.com/v4/eholtz.bf6e040d/997/256/{z}/{x}/{y}.png?access_token={accessToken}', {
-    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-    maxZoom: 18
-    }).addTo(map);
+    L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+        attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+        maxZoom: 18,
+        id: 'eholtz.bf6e040d',
+        accessToken: 'pk.eyJ1IjoiZWhvbHR6IiwiYSI6Ik40Y3QyTUkifQ.w7y1ibG-oeP22MJcHPi54w'
+        }).addTo(map);
 
       
     </script>
