@@ -10,8 +10,12 @@
     
   <body>
     
-    <script src="https://unpkg.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
+    
     <div id="mapid"></div>
+    
+    <script src="https://unpkg.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
+    
+    <script>
     var map = L.map('mapid');
 
     L.tileLayer('https://api.tiles.mapbox.com/v4/eholtz.bf6e040d/997/256/{z}/{x}/{y}.png?access_token={accessToken}', {
@@ -20,6 +24,8 @@
     }).addTo(map);
     
     map.locate({setView: true, maxZoom: 16});
+      
+    </script>
     
   <body>  
   
