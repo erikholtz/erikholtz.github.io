@@ -48,7 +48,8 @@ p {
   font-size: 20px;
   color: #e68900;
   font-family:"Century Gothic";
-  max-width: 400px;
+  word-wrap:break-word;
+  width:400px;
 }
 
 #header {
