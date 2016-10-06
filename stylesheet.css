@@ -42,6 +42,7 @@ a {
 }
 
 p {
+  max-width: 400px;
   position: relative;
   margin-top: 50px;
   text-align: center;
