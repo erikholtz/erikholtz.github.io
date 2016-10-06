@@ -42,13 +42,13 @@ a {
 }
 
 p {
-  max-width: 400px;
   position: relative;
   margin-top: 50px;
   text-align: center;
   font-size: 20px;
   color: #e68900;
   font-family:"Century Gothic";
+  max-width: 400px;
 }
 
 #header {
