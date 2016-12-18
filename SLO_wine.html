@@ -1,0 +1,427 @@
+<!doctype><html><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Odyssey.js Slides</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="icon" type="image/x-icon" href="http://cartodb.github.io/odyssey.js/sandbox/favicon.png">
+  <link rel="icon" type="image/png" href="http://cartodb.github.io/odyssey.js/sandbox/favicon.png">
+
+  <link rel="stylesheet" href="http://cartodb-libs.global.ssl.fastly.net/cartodb.js/v3/themes/css/cartodb.css">
+  <link rel="stylesheet" href="http://cartodb.github.io/odyssey.js/sandbox/css/slides.css">
+  <script src="http://cartodb.github.io/odyssey.js/vendor/modernizr-2.6.2.min.js"></script>
+</head>
+<body>
+  <div id="map" style="width: 100%; height: 100%;"></div>
+
+  <div id="slides_container" style="display:block;">
+    <div id="dots"></div>
+
+    <div id="slides"></div>
+
+    <ul id="navButtons">
+      <li><a class="prev"></a></li>
+      <li><a class="next"></a></li>
+    </ul>
+  </div>
+
+  <div id="credits">
+    <span class="title" id="title">Title</span>
+    <span class="author"><strong id="author">By Name using</strong> <a href="http://cartodb.github.io/odyssey.js/">Odyssey.js</a><span>
+  </span></span></div>
+
+  <script src="http://cartodb-libs.global.ssl.fastly.net/cartodb.js/v3/cartodb.js"></script>
+  <script src="http://cartodb.github.io/odyssey.js/dist/odyssey.js" charset="UTF-8"></script>
+
+  <script>
+    var resizePID;
+
+    function clearResize() {
+      clearTimeout(resizePID);
+      resizePID = setTimeout(function() { adjustSlides(); }, 100);
+    }
+
+    if (!window.addEventListener) {
+      window.attachEvent("resize", function load(event) {
+        clearResize();
+      });
+    } else {
+      window.addEventListener("resize", function load(event) {
+        clearResize();
+      });
+    }
+
+    function adjustSlides() {
+      var container = document.getElementById("slides_container"),
+          slide = document.querySelectorAll('.selected_slide')[0];
+
+      if (slide) {
+        if (slide.offsetHeight+169+40+80 >= window.innerHeight) {
+          container.style.bottom = "80px";
+
+          var h = container.offsetHeight;
+
+          slide.style.height = h-169+"px";
+          slide.classList.add("scrolled");
+        } else {
+          container.style.bottom = "auto";
+          container.style.minHeight = "0";
+
+          slide.style.height = "auto";
+          slide.classList.remove("scrolled");
+        }
+      }
+    }
+
+    var resizeAction = O.Action(function() {
+      function imageLoaded() {
+        counter--;
+
+        if (counter === 0) {
+          adjustSlides();
+        }
+      }
+      var images = $('img');
+      var counter = images.length;
+
+      images.each(function() {
+        if (this.complete) {
+          imageLoaded.call( this );
+        } else {
+          $(this).one('load', imageLoaded);
+        }
+      });
+    });
+
+    function click(el) {
+      var element = O.Core.getElement(el);
+      var t = O.Trigger();
+
+      // TODO: clean properly
+      function click() {
+        t.trigger();
+      }
+
+      if (element) element.onclick = click;
+
+      return t;
+    }
+
+    O.Template({
+      init: function() {
+        var seq = O.Triggers.Sequential();
+
+        var baseurl = this.baseurl = 'http://{s}.api.cartocdn.com/base-light/{z}/{x}/{y}.png';
+        var map = this.map = L.map('map').setView([0, 0.0], 4);
+        var basemap = this.basemap = L.tileLayer(baseurl, {
+          attribution: 'data OSM - map CartoDB'
+        }).addTo(map);
+
+        // enanle keys to move
+        O.Keys().on('map').left().then(seq.prev, seq)
+        O.Keys().on('map').right().then(seq.next, seq)
+
+        click(document.querySelectorAll('.next')).then(seq.next, seq)
+        click(document.querySelectorAll('.prev')).then(seq.prev, seq)
+
+        var slides = O.Actions.Slides('slides');
+        var story = O.Story()
+
+        this.story = story;
+        this.seq = seq;
+        this.slides = slides;
+        this.progress = O.UI.DotProgress('dots').count(0);
+      },
+
+      update: function(actions) {
+        var self = this;
+
+        if (!actions.length) return;
+
+        this.story.clear();
+
+        if (this.baseurl && (this.baseurl !== actions.global.baseurl)) {
+          this.baseurl = actions.global.baseurl || 'http://0.api.cartocdn.com/base-light/{z}/{x}/{y}.png';
+
+          this.basemap.setUrl(this.baseurl);
+        }
+
+        if (this.cartoDBLayer && ("http://"+self.cartoDBLayer.options.user_name+".cartodb.com/api/v2/viz/"+self.cartoDBLayer.options.layer_definition.stat_tag+"/viz.json" !== actions.global.vizjson)) {
+          this.map.removeLayer(this.cartoDBLayer);
+
+          this.cartoDBLayer = null;
+          this.created = false;
+        }
+
+        if (actions.global.vizjson && !this.cartoDBLayer) {
+          if (!this.created) { // sendCode debounce < vis loader
+            cdb.vis.Loader.get(actions.global.vizjson, function(vizjson) {
+              self.map.fitBounds(vizjson.bounds);
+
+              cartodb.createLayer(self.map, vizjson)
+                .done(function(layer) {
+                  self.cartoDBLayer = layer;
+
+                  var sublayer = layer.getSubLayer(0),
+                      layer_name = layer.layers[0].options.layer_name,
+                      filter = actions.global.cartodb_filter ? " WHERE "+actions.global.cartodb_filter : "";
+
+                  sublayer.setSQL("SELECT * FROM "+layer_name+filter)
+
+                  self.map.addLayer(layer);
+
+                  self._resetActions(actions);
+                }).on('error', function(err) {
+                  console.log("some error occurred: " + err);
+                });
+            });
+
+            this.created = true;
+          }
+
+          return;
+        }
+
+        this._resetActions(actions);
+      },
+
+      _resetActions: function(actions) {
+        // update footer title and author
+        var title_ = actions.global.title === undefined ? '' : actions.global.title,
+            author_ = actions.global.author === undefined ? 'Using' : 'By '+actions.global.author+' using';
+
+        document.getElementById('title').innerHTML = title_;
+        document.getElementById('author').innerHTML = author_;
+        document.title = title_ + " | " + author_ +' Odyssey.js';
+
+        var sl = actions;
+
+        document.getElementById('slides').innerHTML = ''
+        this.progress.count(sl.length);
+
+        // create new story
+        for(var i = 0; i < sl.length; ++i) {
+          var slide = sl[i];
+          var tmpl = "<div class='slide' style='diplay:none'>";
+
+          tmpl += slide.html();
+          tmpl += "</div>";
+          document.getElementById('slides').innerHTML += tmpl;
+
+          this.progress.step(i).then(this.seq.step(i), this.seq)
+
+          var actions = O.Parallel(
+            this.slides.activate(i),
+            slide(this),
+            this.progress.activate(i),
+            resizeAction
+          );
+
+          actions.on("finish.app", function() {
+            adjustSlides();
+          });
+
+          this.story.addState(
+            this.seq.step(i),
+            actions
+          )
+        }
+
+        this.story.go(this.seq.current());
+      },
+
+      changeSlide: function(n) {
+        this.seq.current(n);
+      }
+    });
+  </script>
+
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-20934186-21', 'cartodb.github.io');
+    ga('send', 'pageview');
+  </script>
+
+  <script type="text/javascript" src="http://fast.fonts.net/jsapi/3af16084-ba56-49ca-b37d-0b49b59e1927.js"></script>
+
+<script id="md_template" type="text/template">```
+-baseurl: "https://api.mapbox.com/styles/v1/eholtz/citvsl9z8006g2io6p89lv0r0/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiZWhvbHR6IiwiYSI6Ik40Y3QyTUkifQ.w7y1ibG-oeP22MJcHPi54w"
+-title: "SLO Wine Odyssey"
+-author: "eholtz"
+-vizjson: "https://eholtz.carto.com/api/v2/viz/a0493e1c-be60-11e6-bac8-0e3ff518bd15/viz.json"
+```
+
+#A Tour of San Luis Obispo Wine Country
+```
+- center: [35.212778, -120.655873]
+- zoom: 12
+```
+By clicking the arrows below, you can browse through the wineries in and around southern San Luis Obispo, California, including Edna Valley and Avila Beach. The wineries included are currently limited to those wineries in the San Luis Obispo Wine Country Association.
+
+Click on any of the grapes on the map to pull up more information for that winery. This region produces a lot of delicious wine, so use this virtual tour to help plan your next wine tasting adventure! Click the   > below to begin.
+
+
+
+#Autry Cellars
+```
+- center: [35.2258, -120.6216]
+- zoom: 16
+```
+![Autry](http://autrycellars.com/wp-content/uploads/2015/08/Meet-the-Winemaker.jpg)
+
+
+#Baileyana Winery
+```
+- center: [35.2273, -120.5997]
+- zoom: 16
+```
+![Baileyana] (https://scontent.fsnc1-4.fna.fbcdn.net/v/t31.0-8/1291510_700015036712698_6860343866870270016_o.jpg?oh=e688c299530ce162ac3c2830238e7098&oe=58F5C7C1)
+
+
+#Biddle Ranch Vineyard
+```
+- center: [35.2160, -120.6144]
+- zoom: 16
+```
+![Biddle Ranch Vineyard](https://scontent.fsnc1-4.fna.fbcdn.net/v/t1.0-9/11008506_814499458643865_8974570771092944942_n.jpg?oh=2eeac88e10369baa96103fabea54aa65&oe=58F55F14)
+
+#Center of Effort
+```
+- center: [35.1882, -120.5859]
+- zoom: 16
+```
+![Center of Effort](https://scontent.fsnc1-4.fna.fbcdn.net/v/t31.0-8/12778744_1049437241744160_9178094405045350537_o.jpg?oh=618abac36fb8a82030bd2c8f22e47d24&oe=58B3944D)
+
+#Chamisal Vineyards
+```
+- center: [35.2003, -120.5717]
+- zoom: 16
+```
+![Chamisal Vineyards](https://scontent.fsnc1-4.fna.fbcdn.net/v/t31.0-8/10483963_10152230939676517_808654772970159554_o.jpg?oh=fec49237f2b63aa04cbed59c9c4a0b1c&oe=58F5F57D)
+
+#Chene Vineyards
+```
+- center: [35.1863, -120.5767]
+- zoom: 16
+```
+![Chene Vineyards](http://www.chenewines.com/images/slideshow/slide-vineyard.jpg)
+
+#Claiborne & Churchill Winery
+```
+- center: [35.1981, -120.6052]
+- zoom: 16
+```
+![Claiborne & Churchill Winery](https://scontent.fsnc1-4.fna.fbcdn.net/v/t31.0-8/14047147_10154572202171614_1161042148334860622_o.jpg?oh=bbec4521fe25a8e50fdceb50300e62ff&oe=58BA1266)
+
+#Clesi Wines
+```
+- center: [35.2335, -120.6890]
+- zoom: 18
+```
+![Clesi](https://scontent.fsnc1-4.fna.fbcdn.net/v/t1.0-9/14670595_10157491988630018_1661148117244533736_n.jpg?oh=4e144573653529ac32211ef145f4c13b&oe=58AEC4A3)
+
+#Croma Vera Wines
+```
+- center: [35.1797, -120.7340]
+- zoom: 17
+```
+![Croma Vera Wines](https://scontent.fsnc1-4.fna.fbcdn.net/v/t1.0-9/13962600_335618290107482_3713650269875638856_n.jpg?oh=ca7081e25fd10b168d713f7181a1ef0e&oe=58F5453D)
+
+#Edna Valley Vineyard
+```
+- center: [35.2169, -120.6077]
+- zoom: 17
+```
+![Edna Valley Vineyard](https://scontent.fsnc1-4.fna.fbcdn.net/v/t31.0-8/13248521_1768536243376597_6651993852872660417_o.jpg?oh=16d58a9685b4ef638601132ec14a3951&oe=58AFF46E)
+
+#Filipponi Ranch Cellars
+```
+- center: [35.2335, -120.6890]
+- zoom: 18
+```
+![Filipponi Ranch Cellars](https://scontent.fsnc1-4.fna.fbcdn.net/v/t1.0-9/12986921_972735699446637_7810664611373956666_n.jpg?oh=8f10dfd898e49fc8eb610ffcf727de73&oe=58F8C05B)
+
+#Kelsey See Canyon Vineyards
+```
+- center: [35.2082,-120.7186]
+- zoom: 15
+```
+![Kelsey See Canyon Vineyards](https://scontent.fsnc1-4.fna.fbcdn.net/v/t1.0-9/15542078_10157964091015010_3020491083508927862_n.jpg?oh=48068f9ae9eb3bd229406ebffb6d8952&oe=58B2C892)
+
+#Kynsi Winery
+```
+- center: [35.1899, -120.5815]
+- zoom: 16
+```
+![Kynsi Winery] (https://scontent.fsnc1-4.fna.fbcdn.net/v/t31.0-8/14409872_10153729121406331_3856316530015398844_o.jpg?oh=2070999743215fa6b9302e86a503ce3d&oe=58E3E36A)
+
+#Peloton Cellars
+```
+- center: [35.1794, -120.7343]
+- zoom: 17
+```
+![Peloton Cellars](https://scontent.fsnc1-4.fna.fbcdn.net/v/t31.0-8/12080042_1190146347679752_6403846969938343845_o.jpg?oh=3f99e01690c1b57e7ece890f3ca76802&oe=58B53B89)
+
+#Saucelito Canyon Vineyard
+```
+- center: [35.2199, -120.6011]
+- zoom: 16
+```
+![Saucelito Canyon Vineyard](https://scontent.fsnc1-4.fna.fbcdn.net/v/t1.0-9/385644_352868678085959_664105009_n.jpg?oh=f2c0dbb840178db706e25c519cef4aa8&oe=58E96E27)
+
+#Sextant Wines
+```
+- center: [35.2023, -120.6121]
+- zoom: 16
+```
+![Sextant Wines](https://scontent.fsnc1-4.fna.fbcdn.net/v/t31.0-8/473412_367946693246333_911328623_o.jpg?oh=8ccb2968ba152a08839f4d5eacfbcaa2&oe=58E375BA)
+
+#Silver Horse Winery
+```
+- center: [35.1867, -120.7019]
+- zoom: 15
+```
+![Silver Horse Winery](https://scontent.fsnc1-4.fna.fbcdn.net/v/t31.0-8/665000_10151231937259675_1791505448_o.jpg?oh=4c01b87235559eb2cbe6993b76be5675&oe=58EF1822)
+
+#Sinor-LaVallee
+```
+- center: [35.1803, -120.7353]
+- zoom: 17
+```
+![Sinor La-Vallee](https://scontent.fsnc1-4.fna.fbcdn.net/v/t31.0-8/14468557_1818875698349073_6360313957773119290_o.jpg?oh=d8b87aff92e0581e2477fd5c83b0e227&oe=58EA9F49)
+
+#Stephen Ross Wine Cellars
+```
+- center: [35.2443, -120.6702]
+- zoom: 15
+```
+![Stephen Ross Wine Cellars](https://scontent.fsnc1-4.fna.fbcdn.net/v/t1.0-9/12227196_10153730636549889_5284516724583572178_n.jpg?oh=a24a202c80671654753822ab11ccf349&oe=58F919A5)
+
+#Talley Vineyards
+```
+- center: [35.1792, -120.5240]
+- zoom: 15
+```
+![Talley Vineyards](https://scontent.fsnc1-4.fna.fbcdn.net/v/l/t1.0-9/523330_374655785911007_1580494792_n.jpg?oh=5025e3bb28f210ed751a7ad7db3838bc&oe=58E1D91E)
+
+#Tolosa Winery
+```
+- center: [35.2312, -120.6243]
+- zoom: 15
+```
+![Tolosa Winery](https://scontent.fsnc1-4.fna.fbcdn.net/v/t1.0-9/10169202_10152733315883505_237605758948076606_n.jpg?oh=71bd66eb34285ce8c5b50d0bae3dba0f&oe=58AF4D07)
+
+#Wolff Vineyards
+```
+- center: [35.2198, -120.5919]
+- zoom: 15
+```
+![Wolff Vineyards](https://scontent.fsnc1-4.fna.fbcdn.net/v/t31.0-8/11895097_10153537320694330_4115613647175879001_o.jpg?oh=5d857aa377c03c4f4e4a874132e2a051&oe=58F382BD)
+
+
+</script></body></html>
